@@ -70,6 +70,62 @@ function Write-ConsoleLog {
     # $VerbosePreference = $VerbosePreferenceBefore
 }
 
+function Import-ModuleForSure {
+    <#
+    .SYNOPSIS
+        Import a module
+
+    .DESCRIPTION
+        Imports and installs a module if it's not imported or installed already. Taking into account NuGet.
+
+    .NOTES
+        This function is pipeline ready.
+
+    .PARAMETER Name
+        Name of the PowerShell module
+
+    .EXAMPLE
+        Import-ModuleForSure -Name Posh-SSH
+        Imports Posh-SSH for sure.
+    #>
+    
+    param (
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline
+        )]
+        [string]
+        $Name
+    )
+    
+    begin {
+        if (-not (Get-PackageProvider -Name NuGet) ) {
+            Log 'Installing NuGet...'
+            Install-PackageProvider -Name NuGet -Force
+        }
+    }
+    
+    process {
+        Log 'Loading module $Name...'
+        if (Get-Module -Name $Name) {
+            Log "Module '$( $Name )' has been imported already."
+        } elseif (Get-Module -Name $Name -ListAvailable) {
+            Log 'Module '$( $Name )' has been installed already, but is not imported. Importing Module...'
+            Import-Module -Name $Name
+        } else {
+            Log "Installing Module '$( $Name )'..."
+            Install-Module -Name $Name -Force
+
+            Log "Importing Module '$( $Name )..."
+            Import-Module -Name $Name
+        }
+    }
+    
+    end {
+        
+    }
+}
+
 #endregion FUNCTIONS
 #region INITIALIZATION
 <# 
@@ -77,28 +133,8 @@ function Write-ConsoleLog {
 #>
 
 try {
-    Log 'Loading module Posh-SSH...'
-
     # Check if PowerShell module for SFTP is installed already
-    if (Get-Module -Name Posh-SSH) {
-        Log 'Module "Posh-SSH" already imported'
-    } elseif (Get-Module -Name Posh-SSH -ListAvailable) {
-        Log 'Module installed already.'
-
-        Log 'Importing Module "Posh-SSH"...'
-        Import-Module -Name Posh-SSH
-    } else {
-        if (-not (Get-PackageProvider -Name NuGet) ) {
-            Log 'Installing NuGet...'
-            Install-PackageProvider -Name NuGet -Force
-        }
-
-        Log 'Installing Module "Posh-SSH"...'
-        Install-Module -Name Posh-SSH -Force
-
-        Log 'Importing Module "Posh-SSH"...'
-        Import-Module -Name Posh-SSH
-    }
+    Import-ModuleForSure -Name 'Posh-SSH'
 
     #endregion INITIALIZATION
     #region DECLARATIONS
