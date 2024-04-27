@@ -47,7 +47,7 @@ try {
         Logs an event to the console.
         
         .DESCRIPTION
-        Writes text to the console with the current date (US format) in front of it.
+        Writes text to the console with the current date (German format) in front of it.
         
         .PARAMETER Text
         Event/text to be outputted to the console.
@@ -65,8 +65,10 @@ try {
         [alias('Log')]
         [CmdletBinding()]
         param (
-            [Parameter(Mandatory = $true,
-            Position = 0)]
+            [Parameter(
+                Mandatory = $true,
+                Position = 0
+            )]
             [string]
             $Text
         )
@@ -78,7 +80,7 @@ try {
         # $VerbosePreference = 'Continue'
 
         # Write verbose output
-        Write-Output "$( Get-Date -Format 'MM/dd/yyyy HH:mm:ss' ) - $( $Text )"
+        Write-Output "$( Get-Date -Format 'dd.MM.yyyy HH:mm:ss' ) - $( $Text )"
 
         # Restore current VerbosePreference
         # $VerbosePreference = $VerbosePreferenceBefore
