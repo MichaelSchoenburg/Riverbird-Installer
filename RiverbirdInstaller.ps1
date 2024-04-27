@@ -32,7 +32,7 @@
 
     Output Parameters:
 
-    $Successful
+    $ExitCode
 #>
 
 try {
@@ -264,7 +264,7 @@ try {
         Start-Process -FilePath $FullPathInstaller -ArgumentList $Arguments
 
         Log 'Started installation successfully. Exiting successfully...'
-        $Successful = $true
+        $ExitCode = $true
     }
 
     #endregion EXECUTION
@@ -273,5 +273,5 @@ try {
     Log "Exception Message: $( $PSItem.Exception.Message )"
     Log "Inner Exception Message: $( $PSItem.Exception.InnerException )"
     $PSItem.InvocationInfo | Format-List *
-    $Successful = $false
+    $ExitCode = $false
 }
