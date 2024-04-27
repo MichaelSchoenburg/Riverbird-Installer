@@ -260,6 +260,7 @@ try {
                 $s = New-SFTPSession -ComputerName $FtpServerFqdn -Credential $Creds -Port 22 -AcceptKey:$true
 
                 # Download installation file
+                Log 'Downloading installer...'
                 Get-SFTPItem -SFTPSession $s -Path $FullPathSrc -Destination $DirDest -Force # One can only specify a directory as destination. The file will always keep its name.
             }
             finally {
