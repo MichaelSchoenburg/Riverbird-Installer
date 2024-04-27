@@ -61,6 +61,7 @@ try {
         
         Short form
         #>
+
         [alias('Log')]
         [CmdletBinding()]
         param (
@@ -102,6 +103,7 @@ try {
             Imports Posh-SSH for sure.
         #>
         
+        [CmdletBinding()]
         param (
             [Parameter(
                 Mandatory,
@@ -124,7 +126,7 @@ try {
             if (Get-Module -Name $Name) {
                 Log "Module '$( $Name )' has been imported already."
             } elseif (Get-Module -Name $Name -ListAvailable) {
-                Log 'Module '$( $Name )' has been installed already, but is not imported. Importing Module...'
+                Log "Module '$( $Name )' has been installed already, but is not imported. Importing Module..."
                 Import-Module -Name $Name
             } else {
                 Log "Installing Module '$( $Name )'..."
