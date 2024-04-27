@@ -119,7 +119,7 @@ try {
         }
         
         process {
-            Log 'Loading module $Name...'
+            Log "Loading module $( $Name )..."
             if (Get-Module -Name $Name) {
                 Log "Module '$( $Name )' has been imported already."
             } elseif (Get-Module -Name $Name -ListAvailable) {
