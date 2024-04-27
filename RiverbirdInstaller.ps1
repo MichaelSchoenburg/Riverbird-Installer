@@ -19,9 +19,9 @@
 
 # Example arguments
 <#
-    $monitoringVersion '11.0.2401'
-    $webServiceUrl = 'https://portal.MyRiverbirdServer.com/rmm' 
-    $installationToken 'Grf0l9BrCcGbPkcqxeJtgQ9FqU9PpFDBy71cHZejk0kUjhtjjCGjyVlgCdINZp6L'
+    $MonitoringVersion '11.0.2401'
+    $WebServiceUrl = 'https://portal.MyRiverbirdServer.com/rmm' 
+    $InstallationToken 'Grf0l9BrCcGbPkcqxeJtgQ9FqU9PpFDBy71cHZejk0kUjhtjjCGjyVlgCdINZp6L'
     $FtpServerFqdn = 'MyServer.com'
     $FtpUsername = 'MyUser'
     $FtpPassword = 'MyP4$$vv0rd'
