@@ -232,47 +232,55 @@ try {
     #>
 
     <# 
-        Create directory for installation file
+        Check if Riverbird agent is installed already
     #>
 
-    # TODO: Check if is installed already
-
-    Log "Checking if destination directory '$( $DirDest )' exists." 
-    if (-not ( Test-Path -Path $DirDest )) {
-        Log "Doesn't exist. Creating..."
-        New-Item -Path $DirDest -ItemType Directory -Force
+    if ((Get-Package -Name 'Riverbird RMM Launcher')) {
+        Log 'Riverbird agent is installed already. Exiting successfully.'
+        Exit $ExitCodeSuccess
     } else {
-        Log "Exist already."
+        Log "Riverbird agent isn't installed already. Proceeding to install..."
+        <# 
+            Create directory for installation file
+        #>
+
+        Log "Checking if destination directory '$( $DirDest )' exists." 
+        if (-not ( Test-Path -Path $DirDest )) {
+            Log "Doesn't exist. Creating..."
+            New-Item -Path $DirDest -ItemType Directory -Force
+        } else {
+            Log "Exist already."
+        }
+
+        <# 
+            Connect to FTP server to receive installation file
+        #>
+
+        # Build credentials for FTP server
+        $SecureString = ConvertTo-SecureString -AsPlainText $FtpPassword -Force
+        $Creds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $FtpUsername, $SecureString 
+
+        try {
+            # Connect to FTP server
+            $s = New-SFTPSession -ComputerName $FtpServerFqdn -Credential $Creds -Port 22 -AcceptKey:$true
+
+            # Download installation file
+            Get-SFTPItem -SFTPSession $s -Path $FullPathSrc -Destination $DirDest -Force # One can only specify a directory as destination. The file will always keep its name.
+        }
+        finally {
+            # Disconnect from FTP server
+            Remove-SFTPSession -SFTPSession $s
+        }
+
+        <# 
+            Start installation
+        #>
+
+        Start-Process -FilePath $FullPathInstaller -ArgumentList $Arguments
+
+        Log 'Started installation successfully. Exiting successfully...'
+        Exit $ExitCodeSuccess
     }
-
-    <# 
-        Connect to FTP server to receive installation file
-    #>
-
-    # Build credentials for FTP server
-    $SecureString = ConvertTo-SecureString -AsPlainText $FtpPassword -Force
-    $Creds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $FtpUsername, $SecureString 
-
-    try {
-        # Connect to FTP server
-        $s = New-SFTPSession -ComputerName $FtpServerFqdn -Credential $Creds -Port 22 -AcceptKey:$true
-
-        # Download installation file
-        Get-SFTPItem -SFTPSession $s -Path $FullPathSrc -Destination $DirDest -Force # One can only specify a directory as destination. The file will always keep its name.
-    }
-    finally {
-        # Disconnect from FTP server
-        Remove-SFTPSession -SFTPSession $s
-    }
-
-    <# 
-        Start installation
-    #>
-
-    Start-Process -FilePath $FullPathInstaller -ArgumentList $Arguments
-
-    Log 'Started installation successfully. Exiting successfully...'
-    Exit $ExitCodeSuccess
 
     #endregion EXECUTION
 } catch {
