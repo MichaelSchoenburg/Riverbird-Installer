@@ -76,116 +76,131 @@ function Write-ConsoleLog {
     Libraries, Modules, ...
 #>
 
-# Check if PowerShell module for SFTP is installed already
-if (Get-Module -Name Posh-SSH) {
-    Log 'Module "Posh-SSH" already imported'
-} elseif (Get-Module -Name Posh-SSH -ListAvailable) {
-    Log 'Module installed already.'
+try {
+    Log 'Loading module Posh-SSH...'
 
-    Log 'Importing Module "Posh-SSH"...'
-    Import-Module -Name Posh-SSH
-} else {
-    if (-not (Get-PackageProvider -Name NuGet) ) {
-        Log 'Installing NuGet...'
-        Install-PackageProvider -Name NuGet -Force
+    # Check if PowerShell module for SFTP is installed already
+    if (Get-Module -Name Posh-SSH) {
+        Log 'Module "Posh-SSH" already imported'
+    } elseif (Get-Module -Name Posh-SSH -ListAvailable) {
+        Log 'Module installed already.'
+
+        Log 'Importing Module "Posh-SSH"...'
+        Import-Module -Name Posh-SSH
+    } else {
+        if (-not (Get-PackageProvider -Name NuGet) ) {
+            Log 'Installing NuGet...'
+            Install-PackageProvider -Name NuGet -Force
+        }
+
+        Log 'Installing Module "Posh-SSH"...'
+        Install-Module -Name Posh-SSH -Force
+
+        Log 'Importing Module "Posh-SSH"...'
+        Import-Module -Name Posh-SSH
     }
 
-    Log 'Installing Module "Posh-SSH"...'
-    Install-Module -Name Posh-SSH -Force
+    #endregion INITIALIZATION
+    #region DECLARATIONS
+    <#
+        Declare local variables and global variables
+    #>
 
-    Log 'Importing Module "Posh-SSH"...'
-    Import-Module -Name Posh-SSH
+    # The following variables should be set through your rmm solution. 
+    # Here some examples of possible declarations with explanations for each variable.
+    # Tip: PowerShell variables are not case sensitive.
+
+    <#
+        # Example arguments
+        $ExitCodeSuccess = 0
+        $ExitCodeFail = 1001
+        $monitoringVersion = '11.0.2401'
+        $webServiceUrl1 = 'https://portal.MyRiverbirdServer.com/rmm'
+        $webServiceUrl2 = ''
+        $installationToken = 'Grf0l9BrCcGbPkcqxeJtgQ9FqU9PpFDBy71cHZejk0kUjhtjjCGjyVlgCdINZp6L'
+        $proxyUrl = ''
+        $proxyPort = ''
+        $proxyBypassOnLocal = ''
+        $proxyUseDefaultCredentials = ''
+        $proxyDomain = ''
+        $proxyUsername = ''
+        $proxyPassword = ''
+        $FtpServerFqdn = 'MyServer.com'
+        $FtpUsername = 'MyUser'
+        $FtpPassword = 'MyP4$$vv0rd'
+        $NameInstallFile = 'Riverbird RMM Installer.exe'
+        $DirSrc = '/home/CenterMANAGEMENT'
+        $DirDest = 'C:\TSD.CenterVision\Software\Riverbird'
+    #>
+
+    # Make sure paths contain a tailing slash
+    if ( -not ( $DirSrc.EndsWith('/') ) ){ $DirSrc = $DirSrc + '/' }
+    if ( -not ( $DirDest.EndsWith('\') ) ){ $DirDest = $DirDest + '\' }
+
+    # Define paths
+    $FullPathSrc = $DirSrc + $NameInstallFile
+    $FullPathInstaller = $DirDest + $NameInstallFile
+
+    # Define arguments
+    $Arguments = @(
+        'install',
+        "-token $( $installationToken )",
+        "-url $( $webServiceUrl1 )",
+        "-version $( $monitoringVersion )"
+    )
+
+    #endregion DECLARATIONS
+    #region EXECUTION
+    <# 
+        Script entry point
+    #>
+
+    <# 
+        Create directory for installation file
+    #>
+
+    Log "Checking if destination directory '$( $DirDest )' exists." 
+    if (-not (Test-Path -Path $DirDest)) {
+        Log "Doesn't exist. Creating..."
+        New-Item -Path $DirDest -ItemType Directory -Force
+    } else {
+        Log "Exist already."
+    }
+
+    <# 
+        Connect to FTP server to receive installation file
+    #>
+
+    # Build credentials for FTP server
+    $SecureString = ConvertTo-SecureString -AsPlainText $FtpPassword -Force
+    $Creds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $FtpUsername, $SecureString 
+
+    try {
+        # Connect to FTP server
+        $s = New-SFTPSession -ComputerName $FtpServerFqdn -Credential $Creds -Port 22 -AcceptKey:$true
+
+        # Download installation file
+        Get-SFTPItem -SFTPSession $s -Path $FullPathSrc -Destination $DirDest -Force # One can only specify a directory as destination. The file will always keep its name.
+    }
+    finally {
+        # Disconnect from FTP server
+        Remove-SFTPSession -SFTPSession $s
+    }
+
+    <# 
+        Start installation
+    #>
+
+    Start-Process -FilePath $FullPathInstaller -ArgumentList $Arguments
+
+    Log 'Started installation successfully. Exiting successfully...'
+    Exit $ExitCodeSuccess
+
+    #endregion EXECUTION
+} catch {
+    Log "An error occurred. Error Details:"
+    Log "Exception Message: $($PSItem.Exception.Message)"
+    Log "Inner Exception Message: $($PSItem.Exception.InnerException)"
+    $PSItem.InvocationInfo | Format-List *
+    Exit $ExitCodeFail
 }
-
-#endregion INITIALIZATION
-#region DECLARATIONS
-<#
-    Declare local variables and global variables
-#>
-
-# The following variables should be set through your rmm solution. 
-# Here some examples of possible declarations with explanations for each variable.
-# Tip: PowerShell variables are not case sensitive.
-
-<#
-    # Example arguments
-    $monitoringVersion = '11.0.2401'
-    $webServiceUrl1 = 'https://portal.MyRiverbirdServer.com/rmm'
-    $webServiceUrl2 = ''
-    $installationToken = 'Grf0l9BrCcGbPkcqxeJtgQ9FqU9PpFDBy71cHZejk0kUjhtjjCGjyVlgCdINZp6L'
-    $proxyUrl = ''
-    $proxyPort = ''
-    $proxyBypassOnLocal = ''
-    $proxyUseDefaultCredentials = ''
-    $proxyDomain = ''
-    $proxyUsername = ''
-    $proxyPassword = ''
-    $FtpServerFqdn = 'MyServer.com'
-    $FtpUsername = 'MyUser'
-    $FtpPassword = 'MyP4$$vv0rd'
-    $NameInstallFile = 'Riverbird RMM Installer.exe'
-    $DirSrc = '/home/CenterMANAGEMENT'
-    $DirDest = 'C:\TSD.CenterVision\Software\Riverbird'
-#>
-
-# Make sure paths contain a tailing slash
-if ( -not ( $DirSrc.EndsWith('/') ) ){ $DirSrc = $DirSrc + '/' }
-if ( -not ( $DirDest.EndsWith('\') ) ){ $DirDest = $DirDest + '\' }
-
-# Define paths
-$FullPathSrc = $DirSrc + $NameInstallFile
-$FullPathInstaller = $DirDest + $NameInstallFile
-
-# Define arguments
-$Arguments = @(
-    'install',
-    "-token $( $installationToken )",
-    "-url $( $webServiceUrl1 )",
-    "-version $( $monitoringVersion )"
-)
-
-#endregion DECLARATIONS
-#region EXECUTION
-<# 
-    Script entry point
-#>
-
-<# 
-    Create directory for installation file
-#>
-
-Log "Checking if destination directory '$( $DirDest )' exists." 
-if (-not (Test-Path -Path $DirDest)) {
-    Log "Doesn't exist. Creating..."
-    New-Item -Path $DirDest -ItemType Directory -Force
-} else {
-    Log "Exist already."
-}
-
-<# 
-    Connect to FTP server to receive installation file
-#>
-
-# Build credentials for FTP server
-$SecureString = ConvertTo-SecureString -AsPlainText $FtpPassword -Force
-$Creds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $FtpUsername, $SecureString 
-
-try {
-    # Connect to FTP server
-    $s = New-SFTPSession -ComputerName $FtpServerFqdn -Credential $Creds -Port 22 -AcceptKey:$true
-
-    # Download installation file
-    Get-SFTPItem -SFTPSession $s -Path $FullPathSrc -Destination $DirDest -Force # One can only specify a directory as destination. The file will always keep its name.
-}
-finally {
-    # Disconnect from FTP server
-    Remove-SFTPSession -SFTPSession $s
-}
-
-<# 
-    Start installation
-#>
-
-Start-Process -FilePath $FullPathInstaller -ArgumentList $Arguments
-
-#endregion EXECUTION
