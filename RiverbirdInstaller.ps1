@@ -225,7 +225,7 @@ try {
 
     if ((Get-Package -Name 'Riverbird RMM Launcher')) {
         Log 'Riverbird agent is installed already. Exiting successfully.'
-        Exit $ExitCodeSuccess
+        $ExitCode = 1
     } else {
         Log "Riverbird agent isn't installed already. Proceeding to install..."
         <# 
@@ -267,7 +267,7 @@ try {
         Start-Process -FilePath $FullPathInstaller -ArgumentList $Arguments
 
         Log 'Started installation successfully. Exiting successfully...'
-        $ExitCode = $true
+        $ExitCode = 0
     }
 
     #endregion EXECUTION
@@ -276,5 +276,5 @@ try {
     Log "Exception Message: $( $PSItem.Exception.Message )"
     Log "Inner Exception Message: $( $PSItem.Exception.InnerException )"
     $PSItem.InvocationInfo | Format-List *
-    $ExitCode = $false
+    $ExitCode = 1
 }
