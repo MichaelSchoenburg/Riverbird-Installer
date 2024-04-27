@@ -23,6 +23,54 @@
     Performance Considerations: https://docs.microsoft.com/en-us/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations?view=powershell-7.1
 #>
 
+#region FUNCTIONS
+<# 
+    Declare Functions
+#>
+
+function Write-ConsoleLog {
+    <#
+    .SYNOPSIS
+    Logs an event to the console.
+    
+    .DESCRIPTION
+    Writes text to the console with the current date (US format) in front of it.
+    
+    .PARAMETER Text
+    Event/text to be outputted to the console.
+    
+    .EXAMPLE
+    Write-ConsoleLog -Text 'Subscript XYZ called.'
+    
+    Long form
+    .EXAMPLE
+    Log 'Subscript XYZ called.
+    
+    Short form
+    #>
+    [alias('Log')]
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true,
+        Position = 0)]
+        [string]
+        $Text
+    )
+
+    # Save current VerbosePreference
+    # $VerbosePreferenceBefore = $VerbosePreference
+
+    # Enable verbose output
+    # $VerbosePreference = 'Continue'
+
+    # Write verbose output
+    Write-Output "$( Get-Date -Format 'MM/dd/yyyy HH:mm:ss' ) - $( $Text )"
+
+    # Restore current VerbosePreference
+    # $VerbosePreference = $VerbosePreferenceBefore
+}
+
+#endregion FUNCTIONS
 #region INITIALIZATION
 <# 
     Libraries, Modules, ...
@@ -97,54 +145,6 @@ $Arguments = @(
 )
 
 #endregion DECLARATIONS
-#region FUNCTIONS
-<# 
-    Declare Functions
-#>
-
-function Write-ConsoleLog {
-    <#
-    .SYNOPSIS
-    Logs an event to the console.
-    
-    .DESCRIPTION
-    Writes text to the console with the current date (US format) in front of it.
-    
-    .PARAMETER Text
-    Event/text to be outputted to the console.
-    
-    .EXAMPLE
-    Write-ConsoleLog -Text 'Subscript XYZ called.'
-    
-    Long form
-    .EXAMPLE
-    Log 'Subscript XYZ called.
-    
-    Short form
-    #>
-    [alias('Log')]
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true,
-        Position = 0)]
-        [string]
-        $Text
-    )
-
-    # Save current VerbosePreference
-    # $VerbosePreferenceBefore = $VerbosePreference
-
-    # Enable verbose output
-    # $VerbosePreference = 'Continue'
-
-    # Write verbose output
-    Write-Output "$( Get-Date -Format 'MM/dd/yyyy HH:mm:ss' ) - $( $Text )"
-
-    # Restore current VerbosePreference
-    # $VerbosePreference = $VerbosePreferenceBefore
-}
-
-#endregion FUNCTIONS
 #region EXECUTION
 <# 
     Script entry point
