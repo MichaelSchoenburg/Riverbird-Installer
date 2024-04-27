@@ -126,6 +126,46 @@ function Import-ModuleForSure {
     }
 }
 
+function Set-TailingSlash {
+    [CmdletBinding()]
+    param (
+        # Name of the variable (as string)
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [string]
+        $VariableName,
+
+        # Either '\' or '/' (as char)
+        [Parameter(
+            ValueFromPipelineByPropertyName
+        )]
+        [char]
+        [ValidatePattern('\/|\\')]
+        $Slash = '\'
+    )
+    
+    begin {
+        
+    }
+    
+    process {
+        $var = Get-Variable -Name $VariableName
+        if ( 
+            -not ( 
+                $var.Value.EndsWith( $Slash )
+            )
+        ){ 
+            $Value = $var.Value + $Slash
+            Set-Variable -Name $VariableName -Value $Value -Scope Script
+        }
+    }
+    
+    end {
+        
+    }
+}
+
 #endregion FUNCTIONS
 #region INITIALIZATION
 <# 
@@ -170,8 +210,8 @@ try {
     #>
 
     # Make sure paths contain a tailing slash
-    if ( -not ( $DirSrc.EndsWith('/') ) ){ $DirSrc = $DirSrc + '/' }
-    if ( -not ( $DirDest.EndsWith('\') ) ){ $DirDest = $DirDest + '\' }
+    Set-TailingSlash -VariableName 'DirSrc' -Slash '/'
+    Set-TailingSlash -VariableName 'DirDest' -Slash '\'
 
     # Define paths
     $FullPathSrc = $DirSrc + $NameInstallFile
@@ -195,8 +235,10 @@ try {
         Create directory for installation file
     #>
 
+    # TODO: Check if is installed already
+
     Log "Checking if destination directory '$( $DirDest )' exists." 
-    if (-not (Test-Path -Path $DirDest)) {
+    if (-not ( Test-Path -Path $DirDest )) {
         Log "Doesn't exist. Creating..."
         New-Item -Path $DirDest -ItemType Directory -Force
     } else {
@@ -235,8 +277,8 @@ try {
     #endregion EXECUTION
 } catch {
     Log "An error occurred. Error Details:"
-    Log "Exception Message: $($PSItem.Exception.Message)"
-    Log "Inner Exception Message: $($PSItem.Exception.InnerException)"
+    Log "Exception Message: $( $PSItem.Exception.Message )"
+    Log "Inner Exception Message: $( $PSItem.Exception.InnerException )"
     $PSItem.InvocationInfo | Format-List *
     Exit $ExitCodeFail
 }
