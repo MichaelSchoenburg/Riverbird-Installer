@@ -257,6 +257,7 @@ try {
 
             try {
                 # Connect to FTP server
+                Log 'Connecting to FTP server...'
                 $s = New-SFTPSession -ComputerName $FtpServerFqdn -Credential $Creds -Port 22 -AcceptKey:$true
 
                 # Download installation file
@@ -265,6 +266,7 @@ try {
             }
             finally {
                 # Disconnect from FTP server
+                Log 'Disconnecting from FTP server...'
                 Remove-SFTPSession -SFTPSession $s
             }
         } else {
