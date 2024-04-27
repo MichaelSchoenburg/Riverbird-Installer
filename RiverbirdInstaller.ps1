@@ -225,7 +225,7 @@ try {
 
     if ((Get-Package -Name 'Riverbird RMM Launcher')) {
         Log 'Riverbird agent is installed already. Exiting successfully.'
-        $ExitCode = 1
+        $ExitCode = 0
     } else {
         Log "Riverbird agent isn't installed already. Proceeding to install..."
         <# 
