@@ -17,17 +17,22 @@
     Performance Considerations: https://docs.microsoft.com/en-us/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations?view=powershell-7.1
 #>
 
-# Example arguments
 <#
-    $MonitoringVersion '11.0.2401'
+    Input Parameters with Examples:
+
+    $MonitoringVersion = '11.0.2401'
     $WebServiceUrl = 'https://portal.MyRiverbirdServer.com/rmm' 
-    $InstallationToken 'Grf0l9BrCcGbPkcqxeJtgQ9FqU9PpFDBy71cHZejk0kUjhtjjCGjyVlgCdINZp6L'
+    $InstallationToken = 'Grf0l9BrCcGbPkcqxeJtgQ9FqU9PpFDBy71cHZejk0kUjhtjjCGjyVlgCdINZp6L'
     $FtpServerFqdn = 'MyServer.com'
     $FtpUsername = 'MyUser'
     $FtpPassword = 'MyP4$$vv0rd'
     $NameInstallFile = 'Riverbird RMM Installer.exe'
     $DirSrc = '/home/CenterMANAGEMENT'
     $DirDest = 'C:\TSD.CenterVision\Software\Riverbird'
+
+    Output Parameters:
+
+    $Successful
 #>
 
 try {
@@ -189,10 +194,6 @@ try {
         Declare local variables and global variables
     #>
 
-    # Set exit codes
-    $ExitCodeSuccess = 0
-    $ExitCodeFail = 1001
-
     # Make sure paths contain a tailing slash
     Set-TailingSlash -VariableName 'DirSrc' -Slash '/'
     Set-TailingSlash -VariableName 'DirDest' -Slash '\'
@@ -263,7 +264,7 @@ try {
         Start-Process -FilePath $FullPathInstaller -ArgumentList $Arguments
 
         Log 'Started installation successfully. Exiting successfully...'
-        Exit $ExitCodeSuccess
+        $Successful = $true
     }
 
     #endregion EXECUTION
@@ -272,5 +273,5 @@ try {
     Log "Exception Message: $( $PSItem.Exception.Message )"
     Log "Inner Exception Message: $( $PSItem.Exception.InnerException )"
     $PSItem.InvocationInfo | Format-List *
-    Exit $ExitCodeFail
+    $Successful = $false
 }
