@@ -105,6 +105,7 @@ try {
         param (
             [Parameter(
                 Mandatory,
+                Position = 0,
                 ValueFromPipeline
             )]
             [string]
